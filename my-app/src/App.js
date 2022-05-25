@@ -1,7 +1,6 @@
 import React, {useState} from 'react';
+import PostForm from './componets/PostForm';
 import PostList from './componets/PostList';
-import MyButton from './componets/UI/button/MyButton';
-import MyInput from './componets/UI/Input/MyInput';
 import './styles/App.css'
 
 
@@ -11,43 +10,25 @@ const App = () => {
         { id: 2, title:"JavaScript", body: "Description"},
         { id: 3, title:"JavaScript", body: "Description"}
     ]);
-    const [title, setTitle] = useState('');
-    const [body, setBody] = useState('')
+    
+    const createPost = (newPost) => {
+        setPosts([...posts, newPost])
+    }
 
-    const addNewPost = (evt) => {
-        evt.preventDefault();
-        const newPost = {
-            id: posts.length + 1,
-            title,
-            body
-        }
-
-        setPosts([...posts, newPost]);
-        setTitle('');
-        setBody('');
-    };
+    const removePost = (post) => {
+        const newPosts = posts.filter(item => item.id !== post.id);
+        setPosts([...newPosts]);
+    }
 
     return (
-       <div class="App">
-
-           <form>
-               <MyInput
-                    value={title}
-                    onChange={e => setTitle(e.target.value)}
-                    type="text"
-                    placeholder='Название поста'/>
-               <MyInput
-                    value={body}
-                    onChange={e => setBody(e.target.value)}
-                    type="text" 
-                    placeholder='Описание поста'/>
-               <MyButton onClick={addNewPost}>Создать пост</MyButton>
-           </form>
-           <PostList posts={posts} title="Список постов"/>
-           
-           
+       <div class="App">           
+            <PostForm create={createPost}/>
+            {
+                posts.length
+                ? <PostList posts={posts} title="Посты про JS" onRemove={removePost}/>
+                : <h1 style={{textAlign: 'center'}}>Постов не обнаруженно...</h1>
+            }           
        </div>
-        
     );
 }
 

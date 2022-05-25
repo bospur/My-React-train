@@ -1,16 +1,22 @@
 import React from 'react';
+import MyButton from './UI/button/MyButton';
 
-const PostItem = (props) => {
+const PostItem = ({number, post, onRemove}) => {
+    
+    const removePost = () => {
+        onRemove(post)
+    };
+
     return (
         <div className="posts">
                <div className="posts__content">
-                   <strong>{props.post.id}. {props.post.title}</strong>
+                   <strong>{number}. {post.title}</strong>
                    <div>
-                       {props.post.body}
+                       {post.body}
                    </div>
                </div>
                <div className='posts__btns'>
-                   <button>Удалить</button>
+                   <MyButton onClick={removePost}>Удалить</MyButton>
                </div>
            </div>
     );
