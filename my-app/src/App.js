@@ -1,39 +1,42 @@
-import React, {useMemo, useState} from 'react';
+import React, { useEffect, useState} from 'react';
+import { useSortedPosts } from './hooks/useSortedPost';
 import PostFilter from './componets/PostFilter';
 import PostForm from './componets/PostForm';
 import PostList from './componets/PostList';
 import MyButton from './componets/UI/button/MyButton';
 import MyModal from './componets/UI/MyModal/MyModal';
-import './styles/App.css'
+import './styles/App.css';
+import PostService from './API/PostService';
+import Loader from './componets/UI/Loader/Loader';
+import { useFetching } from './hooks/useFetching';
+
 
 
 const App = () => {
-    const [posts, setPosts] = useState([
-        { id: 1, title:"JavaScript", body: "мультипарадигменный язык программирования"},
-        { id: 2, title:"Python", body: "высокоуровневый язык программирования общего назначения с динамической строгой типизацией и автоматическим управлением памятью"},
-        { id: 3, title:"Java", body: "строго типизированный объектно-ориентированный язык программирования общего назначения, разработанный компанией Sun Microsystems."}
-    ]);
+    const [posts, setPosts] = useState([]);
     const [filter, setFilter] = useState({
         sort: '',
         query: ''
     });
     const [modal, setModal] = useState(false);
-
-    const sortedPosts = useMemo(() => {
-        if (filter.sort) {
-            return [...posts].sort((a, b) => a[filter.sort].localeCompare(b[filter.sort]))
+    const sortedAndSorchedPosts = useSortedPosts(posts, filter.sort, filter.query);
+    const [fetchPosts, isPostLoading, postError] = useFetching(
+        async () => {
+            const posts = await PostService.getAll();
+            setPosts(posts);
         }
-        return posts
-    }, [filter.sort, posts])
+    )
 
-    const sortedAndSorchedPosts = useMemo(() => {
-        return sortedPosts.filter(post => post.title.toLowerCase().includes(filter.query))
-    }, [filter.query, sortedPosts])
+    useEffect(() => {
+        fetchPosts();
+    }, [])
 
     const createPost = (newPost) => {
         setPosts([...posts, newPost]);
         setModal(false)
     }
+
+    
 
     const removePost = (post) => {
         const newPosts = posts.filter(item => item.id !== post.id);
@@ -54,11 +57,20 @@ const App = () => {
                 filter={filter}
                 setFilter={setFilter}
             />
-            <PostList 
-                posts={sortedAndSorchedPosts}
-                title="Посты про языки программирования" 
-                onRemove={removePost}
-            />          
+            {postError &&
+                <h1 style={{textAlign: 'center'}}>Ошибка {postError}</h1>
+            }
+            {
+                isPostLoading
+                    ? <div style={{display: 'flex', justifyContent: 'center', marginTop: '50px'}}>
+                        <Loader>Загрузка...</Loader>
+                      </div>
+                    : <PostList 
+                        posts={sortedAndSorchedPosts}
+                        title="Посты" 
+                        onRemove={removePost}
+                      />     
+            }     
        </div>
     );
 }
